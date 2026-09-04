@@ -1,5 +1,5 @@
 [package]
-name = "pong-credits"
+name = "bevy-flock-credits-plugin"
 version = "0.1.0"
 edition = "2024"
 
