@@ -31,7 +31,10 @@ impl Plugin for CreditsPlugin {
         app.init_state::<CreditsState>()
             .add_systems(OnEnter(CreditsState::Active), show_credits)
             .add_systems(OnExit(CreditsState::Active), hide_credits)
-            .add_systems(Update, scroll_credits.run_if(in_state(CreditsState::Active)));
+            .add_systems(
+                Update,
+                scroll_credits.run_if(in_state(CreditsState::Active)),
+            );
     }
 }
 
@@ -48,51 +51,59 @@ fn show_credits(mut commands: Commands, credits_config: Res<CreditsConfig>) {
         total_height += SECTION_SPACING;
     }
 
-    commands.spawn((
-        Node {
-            position_type: PositionType::Absolute,
-            left: Val::Px(0.0),
-            right: Val::Px(0.0),
-            top: Val::Px(0.0),
-            bottom: Val::Px(0.0),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::FlexStart,
-            overflow: Overflow::clip(),
-            ..default()
-        },
-        CreditsText,
-    )).with_children(|parent| {
-        parent.spawn((
+    commands
+        .spawn((
             Node {
-                top: Val::Px(start_top),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Center,
+                position_type: PositionType::Absolute,
+                left: Val::Px(0.0),
+                right: Val::Px(0.0),
+                top: Val::Px(0.0),
+                bottom: Val::Px(0.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexStart,
+                overflow: Overflow::clip(),
                 ..default()
             },
-            ScrollTarget { total_height },
-        )).with_children(|scroll_parent| {
-            for section in &credits_config.sections {
-                scroll_parent.spawn((
-                    Text::new(&section.header),
-                    TextFont { font_size: header_font_size, ..default() },
-                    TextColor(Color::WHITE),
-                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
-                ));
-                scroll_parent.spawn((
-                    Text::new(&section.text),
-                    TextFont { font_size, ..default() },
-                    TextColor(Color::WHITE),
-                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
-                ));
-                scroll_parent.spawn((
+            CreditsText,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn((
                     Node {
-                        height: Val::Px(SECTION_SPACING),
+                        top: Val::Px(start_top),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
                         ..default()
                     },
-                ));
-            }
+                    ScrollTarget { total_height },
+                ))
+                .with_children(|scroll_parent| {
+                    for section in &credits_config.sections {
+                        scroll_parent.spawn((
+                            Text::new(&section.header),
+                            TextFont {
+                                font_size: header_font_size,
+                                ..default()
+                            },
+                            TextColor(Color::WHITE),
+                            TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                        ));
+                        scroll_parent.spawn((
+                            Text::new(&section.text),
+                            TextFont {
+                                font_size,
+                                ..default()
+                            },
+                            TextColor(Color::WHITE),
+                            TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                        ));
+                        scroll_parent.spawn((Node {
+                            height: Val::Px(SECTION_SPACING),
+                            ..default()
+                        },));
+                    }
+                });
         });
-    });
 }
 
 fn hide_credits(mut commands: Commands, query: Query<Entity, With<CreditsText>>) {

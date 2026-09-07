@@ -1,8 +1,3 @@
-[package]
-name = "bevy-flock-credits-plugin"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-bevy = { version = "0.18", features = ["ui", "default_font"] }
-serde = { version = "1", features = ["derive"] }
+[workspace]
+members = ["bevy-flock-credits-plugin", "examples"]
+resolver = "3"

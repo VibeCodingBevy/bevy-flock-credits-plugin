@@ -341,6 +341,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-flock-credits-examples"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-flock-credits-plugin",
+ "serde_json",
+]
+
+[[package]]
 name = "bevy-flock-credits-plugin"
 version = "0.1.0"
 dependencies = [
