@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Bevy 0.18 plugin crate that renders a scrolling end-credits roll. Library only — the package itself has no binary, README, or tests. Present as a virtual workspace.
+Bevy 0.18 plugin crate that renders a scrolling end-credits roll. Library only — the package itself has no binary or tests. Present as a virtual workspace. Consumer setup, config format, and example usage live in the root `README.md`; keep it in sync when the public API or example commands change.
 
 ## Workspace layout
 - Root `Cargo.toml` is a virtual workspace: members are `bevy-flock-credits-plugin` and `examples`.
