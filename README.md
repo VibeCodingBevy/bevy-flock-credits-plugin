@@ -12,7 +12,7 @@ A [Bevy](https://bevyengine.org) 0.18 plugin that renders a scrolling end-credit
 ```toml
 [dependencies]
 bevy = { version = "0.18", default-features = false, features = ["ui", "default_font"] }
-bevy-flock-credits-plugin = { git = "https://github.com/<your-user>/bevy-flock-credits-plugin.git" }
+bevy-flock-credits-plugin = { git = "https://github.com/VibeCodingBevy/bevy-flock-credits-plugin.git" }
 ```
 
 Cargo finds the crate in the repo's `bevy-flock-credits-plugin/` subfolder automatically — no extra keys needed. The plugin only requires Bevy's `ui` + `default_font` features; your own game can enable whatever additional features it needs.
