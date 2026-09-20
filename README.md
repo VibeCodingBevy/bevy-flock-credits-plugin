@@ -76,17 +76,17 @@ text = "made with Bevy"
 ## Notes
 
 - Your app needs at least one camera (`Camera2d`) for the credits UI to be rendered.
-- Set `screen_height` to match your window. Bevy's default window is 1280×720, so `720.0` matches out of the box.
+- Set `screen_height` to match your window. Bevy's default window is 1280×720, so `720.0` matches out of the box. The repo's `credits_config.toml` sets `600.0`, so with the default window the roll starts 120px higher than in production — adjust it to match your window.
 - Text is hardcoded white with no line wrapping — long lines will extend beyond the screen width.
 - Empty `sections` renders nothing. There is no runtime validation.
 - To trigger again, just set `CreditsState::Active` again (e.g. after a game over or menu transition).
 
 ## Running the examples
 
-The repo ships a `credits_config.toml` at the root plus two examples under `examples/`. Run them from the repo root:
+The repo ships a `credits_config.toml` at the root plus two examples under `examples/`. The `showcase` reads `credits_config.toml` from the **current working directory** (not the crate), so run it from the repo root — or copy your own config into whatever directory you run from. A missing or malformed file panics at startup.
 
 ```sh
-# Windowed demo: opens a 1280x720 window and scrolls the credits from credits_config.toml
+# Windowed demo: reads ./credits_config.toml from the CWD and scrolls a 1280x720 window
 cargo run -p bevy-flock-credits-examples --bin showcase
 
 # Headless pipeline check: verifies Idle -> Active -> Idle without a window
