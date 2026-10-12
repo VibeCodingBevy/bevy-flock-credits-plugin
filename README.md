@@ -1,17 +1,17 @@
 # bevy-flock-credits-plugin
 
-A [Bevy](https://bevyengine.org) 0.18 plugin that renders a scrolling end-credits roll for your game.
+A [Bevy](https://bevyengine.org) 0.20 plugin that renders a scrolling end-credits roll for your game.
 
 ## Requirements
 
-- Rust 1.85+ (crate uses edition 2024)
-- Bevy 0.18
+- Rust 1.97.1+ (Bevy 0.20's MSRV; the crate itself uses edition 2024)
+- Bevy 0.20
 
 ## Add to your project
 
 ```toml
 [dependencies]
-bevy = { version = "0.18", default-features = false, features = ["ui", "default_font"] }
+bevy = { version = "0.20", default-features = false, features = ["ui", "default_font"] }
 bevy-flock-credits-plugin = { git = "https://github.com/VibeCodingBevy/bevy-flock-credits-plugin.git" }
 ```
 

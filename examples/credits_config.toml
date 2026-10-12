@@ -1,0 +1,49 @@
+font_size = 20.0
+credits_speed = 100.0
+screen_height = 600.0
+
+[[sections]]
+header = "Vibe coded by"
+text = """\
+Mariusz 'Maurice' Klimek
+"""
+
+[[sections]]
+header = "Script by"
+text = """\
+Mariusz 'Maurice' Klimek
+"""
+
+[[sections]]
+header = "Tested by"
+text = """\
+Mariusz 'Maurice' Klimek
+"""
+
+[[sections]]
+header = "Produced by"
+text = """\
+Mariusz 'Maurice' Klimek
+"""
+
+[[sections]]
+header = "Written and directed by"
+text = """\
+Mariusz 'Maurice' Klimek
+"""
+
+[[sections]]
+header = "Assets"
+text = """\
+Fonts: Google Fonts
+"""
+
+[[sections]]
+header = "Special Thanks"
+text = """\
+My wife, for letting me code in the evenings
+My daughter, for being a lovely distraction
+My subscribers, for being awesome
+Bevy Developers, for this amazing game engine 
+And Mr Big Pickle from OpenCode!
+"""

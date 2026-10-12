@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-bevy = { version = "0.18", features = ["ui", "default_font"] }
+bevy = { version = "0.20", features = ["ui", "default_font"] }
 bevy-flock-credits-plugin = { path = "../bevy-flock-credits-plugin" }
 toml = "0.8"
 

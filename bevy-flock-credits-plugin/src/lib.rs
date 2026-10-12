@@ -82,7 +82,7 @@ fn show_credits(mut commands: Commands, credits_config: Res<CreditsConfig>) {
                         scroll_parent.spawn((
                             Text::new(&section.header),
                             TextFont {
-                                font_size: header_font_size,
+                                font_size: FontSize::Px(header_font_size),
                                 ..default()
                             },
                             TextColor(Color::WHITE),
@@ -91,7 +91,7 @@ fn show_credits(mut commands: Commands, credits_config: Res<CreditsConfig>) {
                         scroll_parent.spawn((
                             Text::new(&section.text),
                             TextFont {
-                                font_size,
+                                font_size: FontSize::Px(font_size),
                                 ..default()
                             },
                             TextColor(Color::WHITE),

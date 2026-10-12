@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Bevy 0.18 plugin crate that renders a scrolling end-credits roll. Library only — the package itself has no binary or tests. Present as a virtual workspace. Consumer setup, config format, and example usage live in the root `README.md`; keep it in sync when the public API or example commands change.
+Bevy 0.20 plugin crate that renders a scrolling end-credits roll. Library only — the package itself has no binary or tests. Present as a virtual workspace. Consumer setup, config format, and example usage live in the root `README.md`; keep it in sync when the public API or example commands change.
 
 ## Workspace layout
 - Root `Cargo.toml` is a virtual workspace: members are `bevy-flock-credits-plugin` and `examples`.
@@ -17,7 +17,7 @@ Run from repo root (workspace-wide). The package alone is not runnable.
 - `cargo run -p bevy-flock-credits-examples --bin headless` — headless Idle→Active→Idle pipeline check, exits non-zero on failure
 
 ## Toolchain & deps
-- Rust edition 2024 → requires Rust 1.85+.
+- Rust edition 2024 → requires Rust 1.85+. Bevy 0.20 itself requires Rust 1.97.1+, so that is the effective minimum toolchain.
 - Package `bevy` dep is `default-features = false, features = ["ui", "default_font"]` — deliberately NOT the full default set (no 2d/3d/audio/gltf). Only UI/ecs/time APIs should be referenced from `lib.rs`; reverify with `cargo check` if the feature set changes.
 - `examples` enables bevy's full default features so `DefaultPlugins`/windowing work without feature-gate guesswork. The windowed example needs a real display and reads the repo-root `credits_config.toml` (`screen_height` 600.0 there, vs the 1280x720 default window). The showcase example must spawn a `Camera2d` itself — Bevy renders UI only when a camera exists, and the plugin intentionally does not own a camera.
 - Consumers add the dependency via the **repo root** git URL (`bevy-flock-credits-plugin = { git = "https://github.com/<user>/bevy-flock-credits-plugin.git" }`). Cargo traverses the repo tree to find the crate in its subfolder — no `package`/`path` keys needed, and the examples crate is never pulled into consumer builds.
