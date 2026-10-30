@@ -1,6 +1,8 @@
 font_size = 20.0
 credits_speed = 100.0
 screen_height = 600.0
+skip_key = "space"
+skip_hold_seconds = 3.0
 
 [[sections]]
 header = "Vibe coded by"

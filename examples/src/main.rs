@@ -12,10 +12,16 @@ fn main() {
         .insert_resource(credits_config)
         .add_plugins(CreditsPlugin)
         .add_systems(Startup, setup)
+        .add_systems(OnExit(CreditsState::Active), exit_after_credits)
         .run();
 }
 
 fn setup(mut commands: Commands, mut next_state: ResMut<NextState<CreditsState>>) {
     commands.spawn(Camera2d);
     next_state.set(CreditsState::Active);
+}
+
+fn exit_after_credits(mut exit: MessageWriter<AppExit>) {
+    println!("credits finished - exiting showcase");
+    exit.write(AppExit::Success);
 }
