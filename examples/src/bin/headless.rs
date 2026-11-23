@@ -6,13 +6,19 @@ use bevy::input::keyboard::{Key, KeyboardInput};
 use bevy::prelude::*;
 use bevy::state::app::StatesPlugin;
 use bevy::time::TimeUpdateStrategy;
-use bevy_flock_credits_plugin::{CreditsConfig, CreditsPlugin, CreditsSection, CreditsState};
+use bevy_flock_credits_plugin::{
+    CreditsConfig, CreditsFinished, CreditsFinishedReason, CreditsPlugin, CreditsRequest,
+    CreditsSection, CreditsState,
+};
 
 const FPS: f32 = 60.0;
 const FRAME_SECS: f32 = 1.0 / FPS;
 const HOLD_SECS: f32 = 3.0;
 const HOLD_FRAMES: u32 = (HOLD_SECS * FPS) as u32;
 const MAX_FRAMES: u32 = 2000;
+
+#[derive(Resource, Default)]
+struct RecordedFinishes(Vec<CreditsFinishedReason>);
 
 fn main() {
     let mut failures = Vec::new();
@@ -24,6 +30,12 @@ fn main() {
         failures.push(reason);
     }
     if let Err(reason) = release_cancels_hold() {
+        failures.push(reason);
+    }
+    if let Err(reason) = stop_cancels_roll() {
+        failures.push(reason);
+    }
+    if let Err(reason) = restart_from_request() {
         failures.push(reason);
     }
 
@@ -44,13 +56,39 @@ fn build_app(credits_speed: f32) -> App {
             FRAME_SECS,
         )))
         .insert_resource(config(credits_speed))
+        .init_resource::<RecordedFinishes>()
         .add_plugins(CreditsPlugin)
-        .add_systems(Startup, start_credits);
+        .add_systems(Startup, start_credits)
+        .add_systems(Update, record_finishes);
     app
 }
 
 fn state(app: &App) -> CreditsState {
     *app.world().resource::<State<CreditsState>>().get()
+}
+
+/// The start request is handled in `Update`, so the roll becomes active on the next frame.
+fn wait_for_active(app: &mut App) -> Result<(), String> {
+    for _ in 0..10 {
+        app.update();
+        if state(app) == CreditsState::Active {
+            return Ok(());
+        }
+    }
+    Err("roll did not become active".into())
+}
+
+fn reasons(app: &App) -> Vec<CreditsFinishedReason> {
+    app.world().resource::<RecordedFinishes>().0.clone()
+}
+
+fn record_finishes(
+    mut reader: MessageReader<CreditsFinished>,
+    mut recorded: ResMut<RecordedFinishes>,
+) {
+    for finished in reader.read() {
+        recorded.0.push(finished.reason);
+    }
 }
 
 fn send_key(app: &mut App, key_state: ButtonState) {
@@ -78,6 +116,12 @@ fn natural_completion() -> Result<(), String> {
         }
         if current == CreditsState::Idle && saw_active {
             println!("natural: scrolled to completion after {frame} frames");
+            if reasons(&app) != vec![CreditsFinishedReason::Completed] {
+                return Err(format!(
+                    "natural: expected Completed, got {:?}",
+                    reasons(&app)
+                ));
+            }
             return Ok(());
         }
     }
@@ -90,6 +134,7 @@ fn natural_completion() -> Result<(), String> {
 /// Holding the skip key for `HOLD_SECS` ends the roll far before it would end naturally.
 fn hold_to_skip_ends_early() -> Result<(), String> {
     let mut app = build_app(20.0);
+    wait_for_active(&mut app)?;
     send_key(&mut app, ButtonState::Pressed);
 
     for frame in 0..MAX_FRAMES {
@@ -107,6 +152,9 @@ fn hold_to_skip_ends_early() -> Result<(), String> {
                     "hold: ended too late at frame {frame}, expected around {HOLD_FRAMES}"
                 ));
             }
+            if reasons(&app) != vec![CreditsFinishedReason::Skipped] {
+                return Err(format!("hold: expected Skipped, got {:?}", reasons(&app)));
+            }
             return Ok(());
         }
     }
@@ -117,6 +165,7 @@ fn hold_to_skip_ends_early() -> Result<(), String> {
 /// Releasing before the threshold cancels the hold; a second full hold still skips.
 fn release_cancels_hold() -> Result<(), String> {
     let mut app = build_app(20.0);
+    wait_for_active(&mut app)?;
 
     send_key(&mut app, ButtonState::Pressed);
     for _ in 0..(HOLD_SECS * FPS) as u32 - 6 {
@@ -137,11 +186,64 @@ fn release_cancels_hold() -> Result<(), String> {
         app.update();
         if state(&app) == CreditsState::Idle {
             println!("release: re-hold ended credits as expected");
+            if reasons(&app) != vec![CreditsFinishedReason::Skipped] {
+                return Err(format!(
+                    "release: expected Skipped, got {:?}",
+                    reasons(&app)
+                ));
+            }
             return Ok(());
         }
     }
 
     Err("release: credits never ended after a second full hold".into())
+}
+
+/// A host `Stop` tears down the roll and reports `Cancelled`.
+fn stop_cancels_roll() -> Result<(), String> {
+    let mut app = build_app(20.0);
+    for _ in 0..5 {
+        app.update();
+    }
+    if state(&app) != CreditsState::Active {
+        return Err("stop: roll did not start".into());
+    }
+
+    app.world_mut().write_message(CreditsRequest::Stop);
+    for _ in 0..5 {
+        app.update();
+    }
+
+    if state(&app) != CreditsState::Idle {
+        return Err("stop: roll did not stop".into());
+    }
+    if reasons(&app) != vec![CreditsFinishedReason::Cancelled] {
+        return Err(format!("stop: expected Cancelled, got {:?}", reasons(&app)));
+    }
+    println!("stop: cancelled after 5 frames");
+    Ok(())
+}
+
+/// Restarting while active does not emit a finish.
+fn restart_from_request() -> Result<(), String> {
+    let mut app = build_app(20.0);
+    for _ in 0..5 {
+        app.update();
+    }
+
+    app.world_mut().write_message(CreditsRequest::Start);
+    for _ in 0..5 {
+        app.update();
+    }
+
+    if state(&app) != CreditsState::Active {
+        return Err("restart: roll is not active".into());
+    }
+    if !reasons(&app).is_empty() {
+        return Err(format!("restart: unexpected finishes {:?}", reasons(&app)));
+    }
+    println!("restart: still active, no finish emitted");
+    Ok(())
 }
 
 fn config(credits_speed: f32) -> CreditsConfig {
@@ -151,6 +253,7 @@ fn config(credits_speed: f32) -> CreditsConfig {
         screen_height: 100.0,
         skip_key: "space".into(),
         skip_hold_seconds: HOLD_SECS,
+        background: None,
         sections: vec![
             CreditsSection {
                 header: "Flock".into(),
@@ -164,6 +267,6 @@ fn config(credits_speed: f32) -> CreditsConfig {
     }
 }
 
-fn start_credits(mut next_state: ResMut<NextState<CreditsState>>) {
-    next_state.set(CreditsState::Active);
+fn start_credits(mut requests: MessageWriter<CreditsRequest>) {
+    requests.write(CreditsRequest::Start);
 }

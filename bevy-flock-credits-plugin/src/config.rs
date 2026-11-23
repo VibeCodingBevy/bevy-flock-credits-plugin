@@ -52,6 +52,9 @@ pub struct CreditsConfig {
     pub skip_key: String,
     #[serde(default = "default_skip_hold_seconds")]
     pub skip_hold_seconds: f32,
+    /// Full-screen backdrop RGBA in `0..=1`. Omitted keeps the node's transparent default.
+    #[serde(default)]
+    pub background: Option<[f32; 4]>,
     pub sections: Vec<CreditsSection>,
 }
 

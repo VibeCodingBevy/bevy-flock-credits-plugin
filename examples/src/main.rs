@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_flock_credits_plugin::{CreditsConfig, CreditsPlugin, CreditsState};
+use bevy_flock_credits_plugin::{CreditsConfig, CreditsFinished, CreditsPlugin, CreditsRequest};
 
 fn main() {
     let credits_config = std::fs::read_to_string("credits_config.toml")
@@ -12,16 +12,24 @@ fn main() {
         .insert_resource(credits_config)
         .add_plugins(CreditsPlugin)
         .add_systems(Startup, setup)
-        .add_systems(OnExit(CreditsState::Active), exit_after_credits)
+        .add_systems(Update, exit_after_credits)
         .run();
 }
 
-fn setup(mut commands: Commands, mut next_state: ResMut<NextState<CreditsState>>) {
+fn setup(mut commands: Commands, mut requests: MessageWriter<CreditsRequest>) {
     commands.spawn(Camera2d);
-    next_state.set(CreditsState::Active);
+    requests.write(CreditsRequest::Start);
 }
 
-fn exit_after_credits(mut exit: MessageWriter<AppExit>) {
-    println!("credits finished - exiting showcase");
-    exit.write(AppExit::Success);
+fn exit_after_credits(
+    mut finished: MessageReader<CreditsFinished>,
+    mut exit: MessageWriter<AppExit>,
+) {
+    for finished in finished.read() {
+        println!(
+            "credits finished ({:?}) - exiting showcase",
+            finished.reason
+        );
+        exit.write(AppExit::Success);
+    }
 }
